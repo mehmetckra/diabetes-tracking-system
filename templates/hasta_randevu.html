@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Randevu Al</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #34495e;
+            font-weight: 500;
+        }
+
+        select, input[type="date"], input[type="time"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .doktor-option {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+        }
+
+        .uzmanlik-badge {
+            background: #3498db;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+
+        .success-message {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2ecc71;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        button[type="submit"] {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button[type="submit"]:hover {
+            background: #2980b9;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .error-message {
+            color: #e74c3c;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .randevu-table {
+            width: 100%;
+            margin-top: 2rem;
+            border-collapse: collapse;
+        }
+
+        .randevu-table th, .randevu-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .randevu-table th {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .iptal-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+
+        .iptal-btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('hasta_panel', hasta_id=hasta_id) }}" class="back-btn">← Geri Dön</a>
+        <h1>Randevu Al</h1>
+        
+        <form id="randevuForm" method="POST">
+            <div class="form-group">
+                <label>Doktor Seçin:</label>
+                <select name="doktor_id" required>
+                    <option value="">Doktor Seçin</option>
+                    {% for doktor in doktorlar %}
+                    <div class="doktor-option">
+                        <option value="{{ doktor.doktor_id }}">
+                            Dr. {{ doktor.ad }} {{ doktor.soyad }} 
+                            {% if doktor.is_diyetisyen %}
+                            (Diyetisyen)
+                            {% endif %}
+                        </option>
+                    </div>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Tarih:</label>
+                <input type="date" name="tarih" required min="{{ min_tarih }}">
+            </div>
+
+            <div class="form-group">
+                <label>Saat:</label>
+                <select name="saat" required>
+                    <option value="">Saat Seçin</option>
+                    {% for saat in musait_saatler %}
+                    <option value="{{ saat }}">{{ saat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+            <button type="submit">Randevu Al</button>
+        </form>
+
+        {% if mevcut_randevular %}
+        <h2>Mevcut Randevularınız</h2>
+        <table class="randevu-table">
+            <thead>
+                <tr>
+                    <th>Doktor</th>
+                    <th>Tarih</th>
+                    <th>Saat</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for randevu in mevcut_randevular %}
+                <tr>
+                    <td>Dr. {{ randevu.doktor_adi }}</td>
+                    <td>{{ randevu.tarih }}</td>
+                    <td>{{ randevu.saat }}</td>
+                    <td>
+                        <button class="iptal-btn" onclick="randevuIptal('{{ randevu.randevu_id }}')">
+                            İptal Et
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+
+    <div id="successMessage" class="success-message">
+        Randevunuz başarıyla oluşturuldu!
+    </div>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            fetch('{{ url_for("hasta_randevu", hasta_id=hasta_id) }}', {  // hasta_randevu_al yerine hasta_randevu
+                method: 'POST',
+                body: new FormData(this)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    const successMessage = document.getElementById('successMessage');
+                    successMessage.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        successMessage.style.animation = 'fadeOut 0.5s ease forwards';
+                        setTimeout(() => {
+                            window.location.href = '{{ url_for("hasta_panel", hasta_id=hasta_id) }}';
+                        }, 500);
+                    }, 2000);
+                } else {
+                    const errorMessage = document.getElementById('errorMessage');
+                    errorMessage.textContent = data.error;
+                    errorMessage.style.display = 'block';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        function randevuIptal(randevuId) {
+            if (confirm('Randevunuzu iptal etmek istediğinize emin misiniz?')) {
+                fetch(`/randevu/iptal/${randevuId}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Randevunuz başarıyla iptal edildi.');
+                        window.location.reload();
+                    } else {
+                        alert('Randevu iptal edilirken bir hata oluştu.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Bir hata oluştu.');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

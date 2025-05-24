@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratuvar Sonuçları</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-container select, .filter-container input {
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            min-width: 200px;
+        }
+
+        .filter-container button {
+            padding: 0.8rem 1.5rem;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .lab-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .lab-table th, .lab-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .lab-table th {
+            background: #3498db;
+            color: white;
+            font-weight: 500;
+        }
+
+        .lab-table tr:hover {
+            background-color: #f5f6fa;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .back-btn:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('doktor_panel', doktor_id=1) }}" class="back-btn">← Geri Dön</a>
+        
+        <h1>Laboratuvar Sonuçları</h1>
+        
+        <div class="filter-container">
+            <select id="hastaFilter">
+                <option value="">Tüm Hastalar</option>
+                {% for hasta in hastalar %}
+                <option value="{{ hasta.hasta_id }}">{{ hasta.ad_soyad }}</option>
+                {% endfor %}
+            </select>
+            
+            <select id="turFilter">
+                <option value="">Tüm Türler</option>
+                <option value="Kan Şekeri">Kan Şekeri</option>
+                <option value="HbA1c">HbA1c</option>
+                <option value="İnsülin">İnsülin</option>
+            </select>
+        </div>
+
+        <table class="lab-table">
+            <thead>
+                <tr>
+                    <th>Sonuç ID</th>
+                    <th>Hasta ID</th>
+                    <th>Hasta Adı Soyadı</th>
+                    <th>Tür</th>
+                    <th>Tarih</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sonuc in sonuclar %}
+                <tr>
+                    <td>{{ sonuc.sonuc_id }}</td>
+                    <td>{{ sonuc.hasta_id }}</td>
+                    <td>{{ sonuc.hasta_adi }}</td>
+                    <td>{{ sonuc.tur }}</td>
+                    <td>{{ sonuc.tarih }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function filterResults() {
+            const hastaId = document.getElementById('hastaFilter').value;
+            const tur = document.getElementById('turFilter').value;
+            
+            window.location.href = `{{ url_for('lab_sonuclari') }}?hasta_id=${hastaId}&tur=${tur}`;
+        }
+
+        document.getElementById('hastaFilter').addEventListener('change', filterResults);
+        document.getElementById('turFilter').addEventListener('change', filterResults);
+    </script>
+</body>
+</html>

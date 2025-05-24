@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doktor Paneli</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='panel.css') }}">
+</head>
+<body>
+    <div class="panel-container">
+        <nav class="sidebar">
+            <h2>Dr. {{ doktor['ad'] }}</h2>
+            <ul>
+                <li><a href="{{ url_for('lab_sonuclari') }}">Laboratuvar Sonuçları</a></li>
+                <li><a href="{{ url_for('ilac_recete') }}">İlaç Reçetesi</a></li>
+                <li><a href="{{ url_for('randevu') }}">Randevu İşlemleri</a></li>
+                <li><a href="{{ url_for('beslenme_plani_olustur') }}">Beslenme Planı Oluştur</a></li>
+                <li><a href="{{ url_for('egzersiz_plani_olustur') }}">Egzersiz Planı Oluştur</a></li>
+                <li><a href="{{ url_for('index') }}">Çıkış Yap</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <h1>Hoş Geldiniz, Dr. {{ doktor['ad'] }}</h1>
+            <div class="quick-stats">
+                <div class="stat-box">
+                    <h3>Bugünkü Randevular</h3>
+                    <p>{{ randevu_sayisi }}</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Bekleyen Sonuçlar</h3>
+                    <p>{{ bekleyen_sonuc }}</p>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

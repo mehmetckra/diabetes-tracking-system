@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İlaç Reçetesi</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='panel.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='recete.css') }}">
+</head>
+<body>
+    <div class="panel-container">
+        <nav class="sidebar">
+            <h2>Dr. {{ doktor['ad'] }}</h2>
+            <ul>
+                <li><a href="{{ url_for('lab_sonuclari') }}">Laboratuvar Sonuçları</a></li>
+                <li><a href="{{ url_for('ilac_recete') }}" class="active">İlaç Reçetesi</a></li>
+                <li><a href="{{ url_for('randevu') }}">Randevu İşlemleri</a></li>
+                <li><a href="{{ url_for('index') }}">Çıkış Yap</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <h1>İlaç Reçetesi Yazma</h1>
+            <div class="recete-form">
+                <form id="receteForm" method="POST" onsubmit="submitForm(event)">
+                    <div class="form-group">
+                        <label for="hasta_id">Hasta ID:</label>
+                        <input type="text" id="hasta_id" name="hasta_id" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ilac_select">İlaç Türü:</label>
+                        <select id="ilac_select" name="ilac_id" required onchange="getAltIlaclar()">
+                            <option value="">İlaç Türü Seçiniz</option>
+                            <option value="1">İnsülin</option>
+                            <option value="2">Hap</option>
+                        </select>
+                    </div>
+                    <div id="insulin_container" style="display: none;">
+                        <div class="form-group">
+                            <label>İnsülin Tipi:</label>
+                            <select id="insulin_type" name="insulin_type" onchange="getSpecificIlaclar()">
+                                <option value="">İnsülin Tipi Seçiniz</option>
+                                <option value="kisa">Kısa Etkili İnsülin</option>
+                                <option value="uzun">Uzun Etkili İnsülin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="hap_container" style="display: none;">
+                        <div class="form-group">
+                            <label>Hap Tipi:</label>
+                            <select id="hap_type" name="hap_type" onchange="getSpecificIlaclar()">
+                                <option value="">Hap Seçiniz</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="specific_ilac_container" style="display: none;">
+                        <div class="form-group">
+                            <label>İlaç Seçin:</label>
+                            <select id="specific_ilac" name="specific_ilac" required>
+                                <option value="">İlaç Seçiniz</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Yeni dozaj miktarı giriş alanı -->
+                    <div class="form-group" id="dozaj_miktar_container">
+                        <label for="dozaj_miktar">Dozaj Miktarı:</label>
+                        <div class="dozaj-input-group">
+                            <input type="number" 
+                                   id="dozaj_miktar" 
+                                   name="dozaj_miktar" 
+                                   step="0.01" 
+                                   min="0"
+                                   placeholder="Miktar giriniz"
+                                   required>
+                            <select id="dozaj_birim" name="dozaj_birim">
+                                <option value="mg">mg</option>
+                                <option value="ml">ml</option>
+                                <option value="iu">IU</option>
+                                <option value="tablet">Tablet</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="aciklama">Açıklama:</label>
+                        <textarea id="aciklama" name="aciklama" rows="4"></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Reçete Yaz</button>
+                </form>
+                <div id="receteResult" style="display: none;" class="alert alert-success">
+                    <h3>Reçete Başarıyla Oluşturuldu</h3>
+                    <p>Reçete ID: <span id="receteId"></span></p>
+                    <p>Tarih: <span id="receteTarih"></span></p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+    function getDozaj() {
+        const ilacSelect = document.getElementById('ilac_select');
+        const dozajContainer = document.getElementById('dozaj_container');
+        const insulinContainer = document.getElementById('insulin_container');
+        const dozajSelect = document.getElementById('dozaj_select');
+        
+        if (ilacSelect.value) {
+            fetch(`/get-dozaj/${ilacSelect.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    dozajSelect.innerHTML = '<option value="">Dozaj Seçiniz</option>';
+                    data.dozajlar.forEach(dozaj => {
+                        dozajSelect.innerHTML += `<option value="${dozaj}">${dozaj}</option>`;
+                    });
+                    dozajContainer.style.display = 'block';
+                    
+                    // İnsülin tipini kontrol et
+                    if (data.is_insulin) {
+                        insulinContainer.style.display = 'block';
+                    } else {
+                        insulinContainer.style.display = 'none';
+                    }
+                });
+        } else {
+            dozajContainer.style.display = 'none';
+            insulinContainer.style.display = 'none';
+        }
+    }
+
+    function getInsulinDetails() {
+        const insulinType = document.getElementById('insulin_type');
+        const detailsContainer = document.getElementById('insulin_details_container');
+        const insulinList = document.getElementById('insulin_list');
+        
+        console.log("İnsülin tipi seçildi:", insulinType.value);  // Debug log
+        
+        if (insulinType.value) {
+            fetch(`/get-insulin-list/${insulinType.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("API yanıtı:", data);  // Debug log
+                    
+                    insulinList.innerHTML = '<option value="">Seçiniz</option>';
+                    if (data.insulinler && data.insulinler.length > 0) {
+                        data.insulinler.forEach(insulin => {
+                            console.log("İşlenen insülin:", insulin);  // Debug log
+                            insulinList.innerHTML += `
+                                <option value="${insulin.id}">
+                                    ${insulin.isim} - ${insulin.dozaj || 'Dozaj belirtilmemiş'}
+                                </option>`;
+                        });
+                        detailsContainer.style.display = 'block';
+                    } else {
+                        console.log("İnsülin bulunamadı");  // Debug log
+                        detailsContainer.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error("Hata oluştu:", error);
+                    detailsContainer.style.display = 'none';
+                });
+        } else {
+            detailsContainer.style.display = 'none';
+        }
+    }
+
+    function getInsulinDosage() {
+        const insulinType = document.getElementById('insulin_type');
+        const insulinList = document.getElementById('insulin_list');
+        const dosageContainer = document.getElementById('insulin_dosage_container');
+        const dosageSelect = document.getElementById('insulin_dosage');
+        
+        if (insulinList.value) {
+            fetch(`/get-insulin-dosage/${insulinType.value}/${insulinList.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    dosageSelect.innerHTML = '<option value="">Dozaj Seçiniz</option>';
+                    data.dosages.forEach(dosage => {
+                        dosageSelect.innerHTML += `<option value="${dosage}">${dosage}</option>`;
+                    });
+                    dosageContainer.style.display = 'block';
+                });
+        } else {
+            dosageContainer.style.display = 'none';
+        }
+    }
+
+    function getAltIlaclar() {
+        const ilacSelect = document.getElementById('ilac_select');
+        const insulinContainer = document.getElementById('insulin_container');
+        const hapContainer = document.getElementById('hap_container');
+        const specificIlacContainer = document.getElementById('specific_ilac_container');
+        
+        // Tüm containerları sıfırla
+        [insulinContainer, hapContainer, specificIlacContainer].forEach(container => {
+            container.style.display = 'none';
+        });
+        
+        if (ilacSelect.value) {
+            if (ilacSelect.value === '1') { // İnsülin
+                insulinContainer.style.display = 'block';
+            } else if (ilacSelect.value === '2') { // Hap
+                hapContainer.style.display = 'block';
+                getHapList();
+            }
+        }
+    }
+
+    function getInsulinList() {
+        const insulinType = document.getElementById('insulin_type');
+        const insulinListContainer = document.getElementById('insulin_list_container');
+        const insulinList = document.getElementById('insulin_list');
+        
+        if (insulinType.value) {
+            fetch(`/get-insulin-list/${insulinType.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    insulinList.innerHTML = '<option value="">Seçiniz</option>';
+                    data.forEach(insulin => {
+                        insulinList.innerHTML += `<option value="${insulin.id}">${insulin.isim}</option>`;
+                    });
+                    insulinListContainer.style.display = 'block';
+                });
+        } else {
+            insulinListContainer.style.display = 'none';
+        }
+    }
+
+    function getHapList() {
+        const hapSelect = document.getElementById('hap_type');
+        fetch('/get-hap-list')
+            .then(response => response.json())
+            .then(data => {
+                hapSelect.innerHTML = '<option value="">Hap Tipi Seçiniz</option>';
+                data.forEach(hap => {
+                    // hap_ismi değerini göster
+                    hapSelect.innerHTML += `<option value="${hap.ilac_id}">${hap.hap_ismi}</option>`;
+                });
+            });
+    }
+
+    function getInsulinSelection() {
+        const insulinType = document.getElementById('insulin_type');
+        const selectionContainer = document.getElementById('insulin_selection_container');
+        const selectionSelect = document.getElementById('insulin_selection');
+        const dosageContainer = document.getElementById('insulin_dosage_container');
+        
+        console.log("İnsülin tipi seçildi:", insulinType.value);
+        
+        if (insulinType.value) {
+            fetch(`/get-insulin-selection/${insulinType.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Gelen seçenekler:", data);
+                    selectionSelect.innerHTML = '<option value="">İlaç Seçiniz</option>';
+                    if (data.ilaclar && data.ilaclar.length > 0) {
+                        data.ilaclar.forEach(ilac => {
+                            // İlacın dozaj bilgisini de göster
+                            selectionSelect.innerHTML += `
+                                <option value="${ilac.ilac_id}">
+                                    ${ilac.isim} (${ilac.dozaj || 'Dozaj belirtilmemiş'})
+                                </option>`;
+                        });
+                        selectionContainer.style.display = 'block';
+                    } else {
+                        console.log("Bu tip için ilaç bulunamadı");
+                        selectionContainer.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error("Hata:", error);
+                    selectionContainer.style.display = 'none';
+                });
+        } else {
+            selectionContainer.style.display = 'none';
+            dosageContainer.style.display = 'none';
+        }
+    }
+
+    function getInsulinDosage() {
+        const insulinType = document.getElementById('insulin_type');
+        const selection = document.getElementById('insulin_selection');
+        const dosageContainer = document.getElementById('insulin_dosage_container');
+        const dosageSelect = document.getElementById('insulin_dosage');
+        
+        if (selection.value) {
+            fetch(`/get-insulin-dosage-info/${insulinType.value}/${selection.value}`)  // URL'yi güncelledik
+                .then(response => response.json())
+                .then(data => {
+                    if (data.dozajlar && data.dozajlar.length > 0) {
+                        dosageSelect.innerHTML = '<option value="">Dozaj Seçiniz</option>';
+                        data.dozajlar.forEach(dozaj => {
+                            dosageSelect.innerHTML += `<option value="${dozaj}">${dozaj}</option>`;
+                        });
+                        dosageContainer.style.display = 'block';
+                    }
+                })
+                .catch(error => console.error("Hata:", error));
+        } else {
+            dosageContainer.style.display = 'none';
+        }
+    }
+
+    function getSpecificIlaclar() {
+        const ilacType = document.getElementById('ilac_select').value;
+        const insulinType = document.getElementById('insulin_type').value;
+        const hapType = document.getElementById('hap_type').value;
+        const specificIlacContainer = document.getElementById('specific_ilac_container');
+        const specificIlacSelect = document.getElementById('specific_ilac');
+        
+        let type = '';
+        if (ilacType === '1') {
+            type = insulinType;
+        } else if (ilacType === '2') {
+            type = 'hap';
+        }
+        
+        if (type) {
+            fetch(`/get-specific-ilaclar/${type}`)
+                .then(response => response.json())
+                .then(data => {
+                    specificIlacSelect.innerHTML = '<option value="">İlaç Seçiniz</option>';
+                    data.ilaclar.forEach(ilac => {
+                        specificIlacSelect.innerHTML += `
+                            <option value="${ilac.ilac_id}">
+                                ${ilac.isim} ${ilac.dozaj ? '- ' + ilac.dozaj : ''}
+                            </option>`;
+                    });
+                    specificIlacContainer.style.display = 'block';
+                });
+        }
+    }
+
+    function submitForm(event) {
+        event.preventDefault();
+        
+        const form = document.getElementById('receteForm');
+        const formData = new FormData(form);
+        
+        // Dozaj bilgilerini kontrol et
+        const dozajMiktar = formData.get('dozaj_miktar');
+        const dozajBirim = formData.get('dozaj_birim');
+        
+        if (!dozajMiktar || !dozajBirim) {
+            alert('Lütfen dozaj miktarını ve birimini giriniz.');
+            return;
+        }
+        
+        // Form gönderimi
+        fetch('/ilac-recete', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Hata: ' + data.error);
+                return;
+            }
+            
+            document.getElementById('receteId').textContent = data.recete_id;
+            document.getElementById('receteTarih').textContent = data.tarih;
+            document.getElementById('receteResult').style.display = 'block';
+            
+            form.reset();
+        })
+        .catch(error => {
+            console.error('Hata:', error);
+            alert('Bir hata oluştu! Detaylar için konsolu kontrol edin.');
+        });
+    }
+    </script>
+    <style>
+    .alert {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 4px;
+    }
+
+    .alert-success {
+        background-color: #dff0d8;
+        border: 1px solid #d6e9c6;
+        color: #3c763d;
+    }
+
+    .error {
+        border: 1px solid red;
+    }
+
+    .form-group select.error {
+        background-color: #fff3f3;
+    }
+
+    .dozaj-input-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .dozaj-input-group input[type="number"] {
+        width: 150px;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .dozaj-input-group select {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        min-width: 80px;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+    </style>
+</body>
+</html>

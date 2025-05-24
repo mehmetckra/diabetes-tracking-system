@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasta Takip Sistemi</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="login-container">
+            <h1>Hasta Takip Sistemi</h1>
+            <div class="login-buttons">
+                <a href="{{ url_for('hasta_giris') }}" class="login-btn">Hasta Girişi</a>
+                <a href="{{ url_for('doktor_giris') }}" class="login-btn">Doktor Girişi</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

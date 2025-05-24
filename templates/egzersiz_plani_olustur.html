@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Egzersiz Planı Oluştur</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #34495e;
+            font-weight: 500;
+        }
+
+        select, input[type="date"], input[type="time"], textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .success-message {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2ecc71;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        button[type="submit"] {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Egzersiz Planı Oluştur</h1>
+        <form method="POST" id="egzersizForm">
+            <div class="form-group">
+                <label>Hasta Seçin:</label>
+                <select name="hasta_id" required>
+                    {% for hasta in hastalar %}
+                    <option value="{{ hasta.hasta_id }}">{{ hasta.ad_soyad }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Egzersiz Türü:</label>
+                <select name="tur" required>
+                    <option value="Yürüyüş">Yürüyüş</option>
+                    <option value="Koşu">Koşu</option>
+                    <option value="Yoga">Yoga</option>
+                    <option value="Bisiklet">Bisiklet</option>
+                    <option value="Yüzme">Yüzme</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Süre (HH:MM):</label>
+                <input type="time" name="sure" required>
+            </div>
+
+            <div class="form-group">
+                <label>Başlangıç Tarihi:</label>
+                <input type="date" name="tarih" required>
+            </div>
+
+            <div class="form-group">
+                <label>Notlar:</label>
+                <textarea name="notlar" rows="4" placeholder="Haftada kaç kez yapılacağı, özel talimatlar..."></textarea>
+            </div>
+
+            <button type="submit">Egzersiz Planı Oluştur</button>
+        </form>
+    </div>
+
+    <div id="successMessage" class="success-message">
+        Egzersiz planı başarıyla oluşturuldu!
+    </div>
+
+    <script>
+        document.getElementById('egzersizForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            fetch('{{ url_for("egzersiz_plani_olustur") }}', {
+                method: 'POST',
+                body: new FormData(this)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    const successMessage = document.getElementById('successMessage');
+                    successMessage.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        successMessage.style.animation = 'fadeOut 0.5s ease forwards';
+                        setTimeout(() => {
+                            window.location.href = '{{ url_for("doktor_panel", doktor_id=1) }}';
+                        }, 500);
+                    }, 2000);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>

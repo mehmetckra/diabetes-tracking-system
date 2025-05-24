@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reçetelerim</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='panel.css') }}">
+    <!-- Font Awesome için CDN bağlantısı -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .recete-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+        }
+
+        .recete-table th, .recete-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .recete-table th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 500;
+        }
+
+        .recete-table tr:hover {
+            background-color: #f5f6fa;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .back-btn:hover {
+            background: #2980b9;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .date-cell {
+            white-space: nowrap;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="panel-container">
+        <nav class="sidebar">
+            <h2>{{ hasta.ad_soyad }}</h2>
+            <ul>
+                <li><a href="{{ url_for('hasta_beslenme', hasta_id=hasta_id) }}">Beslenme Planı</a></li>
+                <li><a href="{{ url_for('hasta_egzersiz', hasta_id=hasta_id) }}">Egzersiz Bilgileri</a></li>
+                <li><a href="{{ url_for('hasta_lab_sonuclari', hasta_id=hasta_id) }}">Laboratuvar Sonuçları</a></li>
+                <li><a href="{{ url_for('hasta_randevu', hasta_id=hasta_id) }}">Randevu Al</a></li>
+                <li><a href="{{ url_for('hasta_receteler', hasta_id=hasta_id) }}" class="active">Reçetelerim</a></li>
+                <li><a href="{{ url_for('index') }}">Çıkış Yap</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <div class="container">
+                <a href="{{ url_for('hasta_panel', hasta_id=hasta_id) }}" class="back-btn">← Geri Dön</a>
+                <h1>Reçetelerim</h1>
+
+                {% if receteler %}
+                    <div class="info-box">
+                        <p>Reçetelerinizi aşağıda görebilirsiniz.</p>
+                    </div>
+                    
+                    <table class="recete-table">
+                        <thead>
+                            <tr>
+                                <th>Reçete ID</th>
+                                <th>Tarih</th>
+                                <th>İlaç İsmi + Türü</th>
+                                <th>Dozaj Bilgisi</th>
+                                <th>Kullanım Şekli</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for recete in receteler %}
+                            <tr>
+                                <td>{{ recete.recete_id }}</td>
+                                <td class="date-cell">{{ recete.tarih }}</td>
+                                <td>{{ recete.ilac_ismi }} + {{ recete.ilac_turu }}</td>
+                                <td>{{ recete.dozaj }}</td>
+                                <td>{{ recete.aciklama }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="empty-message">
+                        <p>Henüz bir reçeteniz bulunmamaktadır.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+</body>
+</html>

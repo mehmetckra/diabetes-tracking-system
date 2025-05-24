@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabet Takip Sistemi</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .logo-container {
+            margin-bottom: 2rem;
+        }
+
+        .logo-container img {
+            max-width: 200px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .login-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        /* ...existing styles... */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-container">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='images/diabetes.png') }}" alt="Diabetes Logo">
+            </div>
+            <h1>Diabet Takip Sistemi</h1>
+            <div class="login-buttons">
+                <button onclick="toggleHastaForm()" class="login-btn">Hasta Girişi</button>
+                <button onclick="toggleDoktorForm()" class="login-btn">Doktor Girişi</button>
+            </div>
+            <div id="hastaForm" class="slide-form">
+                <form action="{{ url_for('hasta_giris') }}" method="POST">
+                    <input type="text" name="hasta_id" placeholder="Hasta ID" required>
+                    <input type="text" name="ad" placeholder="Adınız" required>
+                    <button type="submit" class="submit-btn">Giriş Yap</button>
+                </form>
+            </div>
+            <div id="doktorForm" class="slide-form">
+                <form action="{{ url_for('doktor_giris') }}" method="POST">
+                    <input type="text" name="doktor_id" placeholder="Doktor ID" required>
+                    <input type="text" name="doktor_ad" placeholder="Doktor Adı" required>
+                    <button type="submit" class="submit-btn">Giriş Yap</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        function toggleHastaForm() {
+            document.getElementById('hastaForm').classList.toggle('show');
+            document.getElementById('doktorForm').classList.remove('show');
+        }
+        
+        function toggleDoktorForm() {
+            document.getElementById('doktorForm').classList.toggle('show');
+            document.getElementById('hastaForm').classList.remove('show');
+        }
+    </script>
+</body>
+</html>

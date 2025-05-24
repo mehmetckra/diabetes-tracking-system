@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratuvar Sonuçlarım</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .lab-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+        }
+
+        .lab-table th, .lab-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .lab-table th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 500;
+        }
+
+        .lab-table tr:hover {
+            background-color: #f5f6fa;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .back-btn:hover {
+            background: #2980b9;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .date-cell {
+            white-space: nowrap;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('hasta_panel', hasta_id=hasta_id) }}" class="back-btn">← Geri Dön</a>
+        <h1>Laboratuvar Sonuçlarım</h1>
+
+        {% if sonuclar %}
+            <div class="info-box">
+                <p>Son test sonuçlarınızı aşağıda görebilirsiniz.</p>
+            </div>
+            
+            <table class="lab-table">
+                <thead>
+                    <tr>
+                        <th>Sonuç ID</th>
+                        <th>Tarih</th>
+                        <th>Diabet Türü</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sonuc in sonuclar %}
+                    <tr>
+                        <td>{{ sonuc.sonuc_id }}</td>
+                        <td class="date-cell">{{ sonuc.tarih }}</td>
+                        <td>{{ sonuc.tur }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-message">
+                <p>Henüz laboratuvar sonucunuz bulunmamaktadır.</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

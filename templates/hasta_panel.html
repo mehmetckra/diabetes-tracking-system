@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasta Paneli</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='panel.css') }}">
+</head>
+<body>
+    <div class="panel-container">
+        <nav class="sidebar">
+            <h2>Hoş geldiniz, {{ hasta.ad }}</h2>
+            <ul>
+                <li><a href="{{ url_for('hasta_beslenme', hasta_id=hasta.hasta_id) }}" class="menu-item">Beslenme Planı</a></li>
+                <li><a href="{{ url_for('hasta_egzersiz', hasta_id=hasta.hasta_id) }}" class="menu-item">Egzersiz Bilgileri</a></li>
+                <li><a href="{{ url_for('hasta_lab_sonuclari', hasta_id=hasta.hasta_id) }}" class="menu-item">Laboratuvar Sonuçları</a></li>
+                <li><a href="{{ url_for('hasta_randevu', hasta_id=hasta.hasta_id) }}" class="menu-item">Randevu Al</a></li>
+                <li><a href="{{ url_for('hasta_receteler', hasta_id=hasta.hasta_id) }}" class="menu-item">Reçetelerim</a></li>
+                <li><a href="{{ url_for('index') }}" class="menu-item">Çıkış Yap</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <h1>Hasta Bilgileri</h1>
+            <div class="info-card">
+                <h2>Kişisel Bilgiler</h2>
+                <p><strong>Ad Soyad:</strong> {{ hasta.ad }}</p>
+                <p><strong>Hasta ID:</strong> {{ hasta.hasta_id }}</p>
+            </div>
+            <div class="dashboard-cards">
+                <div class="card">
+                    <h3>Yaklaşan Randevunuz</h3>
+                    {% if yaklasan_randevu %}
+                        <p>Tarih: {{ yaklasan_randevu.tarih }}</p>
+                        <p>Saat: {{ yaklasan_randevu.saat }}</p>
+                    {% else %}
+                        <p>Randevu bulunmuyor</p>
+                    {% endif %}
+                </div>
+                <div class="card">
+                    <h3>Son Reçeteniz</h3>
+                    {% if son_recete %}
+                        <p>Reçete No: {{ son_recete.reçete_id }}</p>
+                        <p>Tarih: {{ son_recete.tarih }}</p>
+                    {% else %}
+                        <p>Reçete bulunmuyor</p>
+                    {% endif %}
+                </div>
+                <div class="card">
+                    <h3>Son Laboratuvar Sonucunuz</h3>
+                    {% if son_lab %}
+                        <p>Sonuç No: {{ son_lab.sonuç_id }}</p>
+                        <p>Tarih: {{ son_lab.tarih }}</p>
+                        <p>Tür: {{ son_lab.tür }}</p>
+                    {% else %}
+                        <p>Sonuç bulunmuyor</p>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Randevu İşlemleri</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .randevu-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+        }
+
+        .randevu-table th, .randevu-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .randevu-table th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 500;
+        }
+
+        .randevu-table tr:hover {
+            background-color: #f5f6fa;
+        }
+
+        .status-button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .status-cancelled {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .filters select, .filters input {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .date-cell {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Randevu İşlemleri</h1>
+        
+        <div class="filters">
+            <input type="date" id="tarihFiltre" onchange="filterRandevular()">
+            <select id="sıralamaFiltre" onchange="filterRandevular()">
+                <option value="tarih">Tarihe Göre Sırala</option>
+                <option value="hasta">Hasta Adına Göre Sırala</option>
+            </select>
+        </div>
+
+        <table class="randevu-table">
+            <thead>
+                <tr>
+                    <th>Hasta ID</th>
+                    <th>Hasta Adı Soyadı</th>
+                    <th>Randevu Tarihi</th>
+                    <th>Randevu Saati</th>
+                    <th>Doktor ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for randevu in randevular %}
+                <tr>
+                    <td>{{ randevu.hasta_id }}</td>
+                    <td>{{ randevu.hasta_adi }}</td>
+                    <td class="date-cell">{{ randevu.tarih }}</td>
+                    <td>{{ randevu.saat }}</td>
+                    <td>{{ randevu.doktor_id }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function filterRandevular() {
+            const tarih = document.getElementById('tarihFiltre').value;
+            const siralama = document.getElementById('sıralamaFiltre').value;
+            
+            fetch(`/randevu/filter?tarih=${tarih}&siralama=${siralama}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Tabloyu güncelle
+                    updateTable(data.randevular);
+                });
+        }
+
+        function updateTable(randevular) {
+            const tbody = document.querySelector('.randevu-table tbody');
+            tbody.innerHTML = '';
+            
+            randevular.forEach(randevu => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${randevu.hasta_id}</td>
+                        <td>${randevu.hasta_adi}</td>
+                        <td class="date-cell">${randevu.tarih}</td>
+                        <td>${randevu.saat}</td>
+                        <td>${randevu.doktor_id}</td>
+                    </tr>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>

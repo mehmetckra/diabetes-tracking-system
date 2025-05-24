@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İlaç Reçetesi</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='panel.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='recete.css') }}">
+</head>
+<body>
+    <div class="panel-container">
+        <nav class="sidebar">
+            <h2>Dr. {{ doktor['ad'] }}</h2>
+            <ul>
+                <li><a href="{{ url_for('lab_sonuclari') }}">Laboratuvar Sonuçları</a></li>
+                <li><a href="{{ url_for('ilaç_recete') }}" class="active">İlaç Reçetesi</a></li>
+                <li><a href="{{ url_for('randevu') }}">Randevu İşlemleri</a></li>
+                <li><a href="{{ url_for('index') }}">Çıkış Yap</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <h1>İlaç Reçetesi Yazma</h1>
+            <div class="recete-form">
+                <form action="{{ url_for('ilaç_recete') }}" method="POST">
+                    <div class="form-group">
+                        <label for="hasta_id">Hasta ID:</label>
+                        <input type="text" id="hasta_id" name="hasta_id" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ilaç_select">İlaç Seçin:</label>
+                        <select id="ilaç_select" name="ilaç_id" required>
+                            <option value="">İlaç Seçiniz</option>
+                            {% for ilaç in ilaçlar %}
+                            <option value="{{ ilaç.ilaç_id }}">{{ ilaç.isim }} - Dozaj: {{ ilaç.dozaj }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>İnsülin Tipi:</label>
+                        <div class="insulin-options">
+                            <label>
+                                <input type="checkbox" name="kisa_etkili" value="1">
+                                Kısa Etkili İnsülin
+                            </label>
+                            <label>
+                                <input type="checkbox" name="uzun_etkili" value="1">
+                                Uzun Etkili İnsülin
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="aciklama">Açıklama:</label>
+                        <textarea id="aciklama" name="aciklama" rows="4"></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Reçete Yaz</button>
+                </form>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
